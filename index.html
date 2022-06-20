@@ -1,1 +1,227 @@
-saycan hello world
+
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+    <title>SayCan</title>
+
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- <base href="/"> -->
+
+        <!--FACEBOOK-->
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="682">
+    <meta property="og:image:height" content="682">
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://saycan-corl.github.io/"/>
+    <meta property="og:title" content="SayCan" />
+    <meta property="og:description" content="Project page for Do As I Can, Not As I Say: Grounding Language in Robotic Affordances." />
+
+        <!--TWITTER-->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="SayCan" />
+    <meta name="twitter:description" content="Project page for Do As I Can, Not As I Say: Grounding Language in Robotic Affordances." />
+
+
+<!--     <link rel="apple-touch-icon" href="apple-touch-icon.png"> -->
+  <!-- <link rel="icon" type="image/png" href="img/seal_icon.png"> -->
+    <!-- Place favicon.ico in the root directory -->
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.8.0/codemirror.min.css">
+    <link rel="stylesheet" href="css/app.css">
+
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.8.0/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.3/clipboard.min.js"></script>
+    
+    <script src="js/app.js"></script>
+</head>
+
+<body>
+    <div class="container" id="main">
+        <div class="row">
+            <h2 class="col-md-12 text-center">
+                <b><font size="+6">Do As I Can, Not As I Say</font></b>: </br> Grounding Language in Robotic Affordances </br> 
+                <!--<small>
+                    CoRL 2021
+                </small>-->
+            </h2>
+        </div>
+        <div class="row">
+            <div class="col-md-12 text-center">
+               CoRL 2022 Submission 370
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+               
+                <h3>
+                    Abstract
+                </h3>
+                <p class="text-justify">
+Large language models can encode a wealth of semantic knowledge about the world. Such knowledge could in principle be extremely useful to robots aiming to act upon high-level, temporally extended instructions expressed in natural language.
+However, a significant weakness of language models is that they lack contextual grounding, which makes it difficult to leverage them for decision making within a given real-world context. 
+For example, asking a language model to describe how to clean a spill might result in a reasonable narrative, but it may not be applicable to a particular agent, such as a robot, that needs to perform this task in a particular environment. 
+We propose to provide this grounding by means of pretrained behaviors, which are used to condition the model to propose natural language actions that are both feasible and contextually appropriate. 
+The robot can act as the language model’s “hands and eyes,” while the language model supplies high-level semantic knowledge about the task. 
+We show how low-level tasks can be combined with large language models so  that  the  language  model  provides  high-level  knowledge about the procedures for performing complex and temporally extended instructions,  while  value  functions  associated  with  these  tasks  provide  the  grounding necessary to connect this knowledge to a particular physical environment. 
+We evaluate our method on a number of real-world robotic tasks, where we show that this approach is capable of completing long-horizon,  abstract,  natural language instructions on a mobile manipulator. 
+                </p>
+             <p style="text-align:center;">
+        	    	<video id="v0" width="100%" playsinline autoplay muted loop controls>
+                       <source src="img/demo1.mp4" type="video/mp4">
+                   </video>
+                </p>
+            </div>
+        </div>
+
+
+	<!-- <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h3>
+                    Video
+                </h3>
+                <div class="text-center">
+                    <div style="position:relative;padding-top:56.25%;">
+                    </div>
+                </div>
+            </div>
+        </div> -->
+
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+            	<br>
+                <h3>
+                    Approach
+                </h3>
+                <p class="text-justify">
+                Imagine a robot operating in a kitchen that is capable of executing skills such as "pick up the coffee cup" or "go to the sink".
+To get the robot to use these skills to perform a complex task (e.g. "I spilled my drink, can you help?"), the user could manually break it up into steps consisting of these atomic commands. 
+			However,this would be exceedingly tedious. A language model can split the high-level instruction ("I spilled my drink, can you help?") into sub-tasks, but it cannot do that effectively unless it has the context of what the robot is capable of given the abilities, current state of the robot and its environment.
+<br><br>
+When querying existing large language models, we see that a language model queried with "I spilled my drink, can you help?" may respond with "You could try using a vaccuum cleaner" or "I'm sorry, I didn't mean to spill it".
+                <p style="text-align:center;">
+        	    <image src="img/gpt3-cropped2.png" class="img-responsive">
+                </p>
+While these responses sound reasonable, they are not feasible to execute with the robot's capabilities in its current environment.  
+<br><br>
+The main principle that we use to connect LLMs to physical tasks is to observe that, in addition of asking the LLM to simply interpret an instruction, we can use it to score the likelihood that an individual skill makes progress towards completing the high-level instruction.
+Furthermore, if each skill has an accompanying affordance function that quantifies how likely it is to succeed from the current state (such as a learned value function), its value can be used to weight the skill's likelihood.
+                <p style="text-align:center;">
+        	    <image src="img/saycan-llm.gif" class="img-responsive">
+                </p>
+<br><br>
+Once the skill is selected, we execute it on the robot, the process proceeds by iteratively selecting a task and appending it to the instruction.
+Practically, we structure the planning as a dialog between a user and a robot, in which a user provides the high level-instruction, e.g. "How would you bring me a coke can?" and the language model responds with an explicit sequence e.g. "I would: 1. Find a coke can, 2. Pick up the coke can, 3. Bring it to you, 4. Done".  
+                <p style="text-align:center;">
+        	    <image src="img/saycan.png" class="img-responsive">        	   
+                </p>
+In summary, given a high-level instruction, SayCan combines probabilities from a language model (representing the probability that a skill is useful for the instruction) with the probabilities from a value function (representing the probability of successfully executing said skill) to select the skill to perform. This emits a skill that is both possible and useful. The process is repeated by appending the selected skill to robot response and querying the models again, until the output step is to terminate.                
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h3>
+                    Results
+                </h3>
+		<p class="text-justify">
+		We benchmarked the proposed algorithm Saycan in two scenes, an office kitchen and a mock office kitchen with 101 tasks specified by natural 
+			langauge instructions. Below we show some highlights of the results.
+		</p>
+		
+		<p class="text-justify">
+			We visualize the decision making process of SayCan. The blue bar indicates (normalized) LLM probability and the red bar 
+			indicates (normalized) probability of 
+			successful execution of selected skills. The combined score is in green bar, 
+			and the algorithm choose the skill with highest combined score. This visualization
+			highlights the interpretability of SayCan.
+		</p>
+		    
+		<p class="text-justify">
+			Given the task "I spilled my coke, can you bring me something to clean it up?", SayCan successfully planned and executed the following 
+			steps 1. Find a sponge 2. Pick up the sponge
+			3. Bring it to you 4. Done. As shown below:
+	        </p>
+                <p style="text-align:center;">
+                    <image src="img/qualitative_1.png"  class="img-responsive" height="600px">
+                </p>
+			
+		
+		<p class="text-justify">
+			However, if we slightly tweak the task to "I spilled my coke, can you bring me a replacement", SayCan planned the following steps instead
+			1. Find a coke can 2. Pick up the coke can
+			3. Bring it to you 4. Done. This highlights that SayCan is able to leverage the large capacity of LLMs, 
+			where their semantic knowledge about the world can be useful both for interpreting instructions
+			and understanding how to execute them.
+	        </p>
+			
+		  <p style="text-align:center;">
+                    <image src="img/qualitative_2.png"  class="img-responsive" height="600px">
+                </p>
+			  
+		<p> In the next example, SayCan leverages the ability of the affordances to "override" the language model; though the language model believes picking up the sponge is the right skill, the affordances are aware this isn't possible and instead "find a sponge" is chosen. This highlights the necessity of affordance grounding.
+		 <p style="text-align:center;">
+                    <image src="img/embodiment_example.png"  class="img-responsive" height="600px">
+                </p>
+			  
+                <p class="text-justify">
+			The proposed approach achieves an overall plan success rate of 70% and execution success rate of 61% of 101 tasks. For more details, please refer to 
+			our paper. 
+		</p>
+		<p style="test-align:center;">
+					<video id="v0" width="100%" playsinline autoplay muted loop>
+                       <source src="img/mosaic_16_demo_white.mp4" type="video/mp4">
+                   </video>		
+               </p>
+		<p class="text-justify">
+		The proposed method can scale to long horizon tasks involving multiple steps, for example, for the task "I spilled my coke on the table,
+			how would you throw it away and bring me something to help clean", the robot successfully planned and execute 8 steps. The execution 
+			and planning process are shown in the video below.
+		</p>
+		<p style="test-align:center;">
+					<video id="v0" width="100%" playsinline muted loop controls>
+                       <source src="img/demo1.mp4" type="video/mp4">
+                   </video>		
+        </p>
+		<p class="text-justify">
+
+         For the task "I just worked out, can you bring me a drink and a snack to recover?, the execution 
+			and planning process are shown in the video below.
+		</p>
+        <p style="test-align:center;">
+					<video id="v0" width="100%" playsinline muted loop controls>
+                       <source src="img/demo2.mp4" type="video/mp4">
+                   </video>		
+        </p>
+        <p class="text-justify">
+
+         In the next example, we show SayCan is able to plan and execute a very long-horizon task involving 16 steps.
+		</p>
+        <p style="test-align:center;">
+					<video id="v0" width="100%" playsinline muted loop controls>
+                       <source src="img/demo3.mp4" type="video/mp4">
+                   </video>		
+
+	    </div>
+        </div>
+            
+     
+     
+    </div>
+</body>
+</html>
